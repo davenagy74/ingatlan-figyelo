@@ -269,7 +269,7 @@ def main():
             
             # --- 1. TELEGRAM ÜZENET KÜLDÉSE ---
             uzenet = f"🏠 <b>Új ház: {forras}</b>\n\n<b>Cím:</b> {haz['cim']}\n🔗 <a href='{haz['link']}'>Kattints ide a hirdetésért</a>"
-            # send_telegram_message(uzenet)
+            send_telegram_message(uzenet)
             
             # VÁRUNK 2 MÁSODPERCET, HOGY A TELEGRAM NE TILTSA LE A BOTOT SPAMELÉSÉRT!
             time.sleep(2)
