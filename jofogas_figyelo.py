@@ -3,6 +3,7 @@ import json
 import os
 import re
 import csv
+import time
 from datetime import datetime
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
@@ -264,6 +265,9 @@ def main():
             # --- 1. TELEGRAM ÜZENET KÜLDÉSE ---
             uzenet = f"🏠 <b>Új ház: {forras}</b>\n\n<b>Cím:</b> {haz['cim']}\n🔗 <a href='{haz['link']}'>Kattints ide a hirdetésért</a>"
             send_telegram_message(uzenet)
+            
+            # VÁRUNK 2 MÁSODPERCET, HOGY A TELEGRAM NE TILTSA LE A BOTOT SPAMELÉSÉRT!
+            time.sleep(2)
             
             # --- 2. MENTÉS A CSV TÁBLÁZATBA ---
             with open(csv_fajl, mode="a", newline="", encoding="utf-8") as f:
