@@ -192,7 +192,8 @@ def scrape_zenga():
             
             for doboz in soup.find_all('a', href=True):
                 link = doboz.get('href', '')
-                if 'elado' in link and 'haz' in link and 'kereses' not in link and len(link) > 25:
+                # SZIGORÍTÁS: Csak a valódi ingatlan adatlapokat engedjük be!
+                if '/ingatlan/' in link and 'elado' in link and 'haz' in link:
                     teljes_link = "https://www.zenga.hu" + link if link.startswith("/") else link
                     tiszta_link = teljes_link.split('?')[0]
                     id_match = re.search(r'-(\d+)$', tiszta_link)
@@ -227,9 +228,13 @@ def scrape_ingatlan_com():
                 if id_match:
                     alap_id = "icom_" + id_match.group(1)
                     szoveg = doboz.get_text(separator=" ", strip=True)
-                    teljes_link = "https://ingatlan.com" + tiszta_link
                     
+                    # SZEMÉTKIVETŐ: Kitöröljük a rejtett gomb zavaró szövegét
+                    szoveg = szoveg.replace("Elrejtetted ezt az ingatlant és az összes hozzá tartozó hirdetést", "").strip()
+                    szoveg = szoveg.replace("Elrejtett ingatlan Mutasd", "").strip()
+
                     vegleges_id = keszit_ujjlenyomat(alap_id, szoveg, teljes_link)
+                    teljes_link = "https://ingatlan.com" + tiszta_link
                     
                     if not any(t['id'] == vegleges_id for t in talalatok):
                         cim_szoveg = szoveg[:50] + "..." if len(szoveg) > 50 else "Ingatlan.com Ház"
