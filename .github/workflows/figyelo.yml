@@ -1,0 +1,39 @@
+name: Napi Ingatlan Figyelo
+
+on:
+  schedule:
+    # Minden nap reggel 18:00-kor fut le (magyar idő szerint)
+    - cron: '0 16 * * *'
+  workflow_dispatch: # Ez a sor teszi lehetővé, hogy gombnyomásra is el tudd indítani!
+
+jobs:
+  kereses:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Kód letöltése
+      uses: actions/checkout@v4
+
+    - name: Python beállítása
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Csomagok és böngésző telepítése
+      run: |
+        pip install -r requirements.txt
+        playwright install chromium --with-deps
+
+    - name: Ingatlanvadász program futtatása
+      env:
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      # FONTOS: Ha a fő python fájlodat nem main.py-nak hívják, írd át az alábbi sorban!
+      run: python jofogas_figyelo.py 
+
+    - name: Memória (lathato.json) visszamentése
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Bot"
+        git add lathato.json
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Memória frissítése új hirdetésekkel" && git push)
