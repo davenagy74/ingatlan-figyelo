@@ -2,9 +2,12 @@ name: Napi Ingatlan Figyelo
 
 on:
   schedule:
-    # Minden nap reggel 18:00-kor fut le (magyar idő szerint)
     - cron: '0 16 * * *'
-  workflow_dispatch: # Ez a sor teszi lehetővé, hogy gombnyomásra is el tudd indítani!
+  workflow_dispatch:
+
+# Ez a sor tünteti el a Node.js figyelmeztetést!
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   kereses:
@@ -28,7 +31,6 @@ jobs:
       env:
         TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      # FONTOS: Ha a fő python fájlodat nem main.py-nak hívják, írd át az alábbi sorban!
       run: python jofogas_figyelo.py 
 
     - name: Memória (lathato.json) visszamentése
