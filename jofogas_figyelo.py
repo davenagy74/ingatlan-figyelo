@@ -269,7 +269,7 @@ def main():
             
             # --- 1. TELEGRAM ÜZENET KÜLDÉSE ---
             uzenet = f"🏠 <b>Új ház: {forras}</b>\n\n<b>Cím:</b> {haz['cim']}\n🔗 <a href='{haz['link']}'>Kattints ide a hirdetésért</a>"
-            send_telegram_message(uzenet)
+            # send_telegram_message(uzenet)
             
             # VÁRUNK 2 MÁSODPERCET, HOGY A TELEGRAM NE TILTSA LE A BOTOT SPAMELÉSÉRT!
             time.sleep(2)
@@ -278,14 +278,36 @@ def main():
             with open(csv_fajl, mode="a", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 if not csv_letezik:
-                    # Ha még sose volt ilyen fájl, csinálunk neki egy szép fejlécet
-                    writer.writerow(["Dátum", "Forrás", "Cím", "Link", "Azonosító"])
+                    # ÚJ FEJLÉC: Bekerült a Város, Ár és Méret!
+                    writer.writerow(["Dátum", "Forrás", "Város", "Ár", "Méret (m2)", "Cím", "Link", "Azonosító"])
                     csv_letezik = True
                 
-                # Bepakoljuk a friss házat a táblázat végére
+                # --- ADATOK KINYERÉSE AZ UJJLENYOMATBÓL ---
+                varos = "Ismeretlen"
+                ar = "-"
+                meret = "-"
+                
+                # Ha az azonosító a mi "haz_" formátumunk (pl: haz_velence_65000000_90)
+                if haz["id"].startswith("haz_"):
+                    reszek = haz["id"].split("_")
+                    if len(reszek) >= 4:
+                        varos = reszek[1].capitalize()  # pl. "velence" -> "Velence"
+                        
+                        # Szépítjük az árat millió Forintra (pl. 89900000 -> 89.9 M Ft)
+                        try:
+                            ar_szam = int(reszek[2])
+                            # Ha kerek az összeg, ne írjon ki .0-t
+                            ar_formazott = f"{ar_szam / 1000000:.1f}".replace(".0", "")
+                            ar = f"{ar_formazott} M Ft"
+                        except ValueError:
+                            ar = reszek[2]
+                            
+                        meret = reszek[3]
+                
+                # Bepakoljuk az adatokat a 8 oszlopos táblázatba
                 mai_datum = datetime.now().strftime("%Y-%m-%d %H:%M")
-                writer.writerow([mai_datum, forras, haz['cim'], haz['link'], haz['id']])
-
+                writer.writerow([mai_datum, forras, varos, ar, meret, haz['cim'], haz['link'], haz['id']])
+                
             # --- 3. MEMÓRIA FRISSÍTÉSE ---
             latott_idk.append(haz["id"]) 
 
