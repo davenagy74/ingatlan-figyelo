@@ -2,6 +2,8 @@ import requests
 import json
 import os
 import re
+import csv
+from datetime import datetime
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 from dotenv import load_dotenv
@@ -251,20 +253,37 @@ def main():
     uj_hazak.extend(scrape_ingatlan_com())
 
     uj_talalat_szam = 0
+    csv_fajl = "adatbazis.csv"
+    csv_letezik = os.path.exists(csv_fajl)
 
     for haz in uj_hazak:
         if haz["id"] not in latott_idk:
             uj_talalat_szam += 1
             forras = haz.get("forras", "Ismeretlen portál")
             
+            # --- 1. TELEGRAM ÜZENET KÜLDÉSE ---
             uzenet = f"🏠 <b>Új ház: {forras}</b>\n\n<b>Cím:</b> {haz['cim']}\n🔗 <a href='{haz['link']}'>Kattints ide a hirdetésért</a>"
             send_telegram_message(uzenet)
+            
+            # --- 2. MENTÉS A CSV TÁBLÁZATBA ---
+            with open(csv_fajl, mode="a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                if not csv_letezik:
+                    # Ha még sose volt ilyen fájl, csinálunk neki egy szép fejlécet
+                    writer.writerow(["Dátum", "Forrás", "Cím", "Link", "Azonosító"])
+                    csv_letezik = True
+                
+                # Bepakoljuk a friss házat a táblázat végére
+                mai_datum = datetime.now().strftime("%Y-%m-%d %H:%M")
+                writer.writerow([mai_datum, forras, haz['cim'], haz['link'], haz['id']])
+
+            # --- 3. MEMÓRIA FRISSÍTÉSE ---
             latott_idk.append(haz["id"]) 
 
     if uj_talalat_szam > 0:
         with open(lato_fajl, "w", encoding="utf-8") as f:
             json.dump(latott_idk, f)
-        print(f"✅ {uj_talalat_szam} db új hirdetés elküldve a Telegramra!")
+        print(f"✅ {uj_talalat_szam} db új hirdetés elküldve a Telegramra és mentve a CSV-be!")
     else:
         print("💤 Nincs új hirdetés, a bot csendben marad.")
 
