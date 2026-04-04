@@ -233,8 +233,8 @@ def scrape_ingatlan_com():
                     szoveg = szoveg.replace("Elrejtetted ezt az ingatlant és az összes hozzá tartozó hirdetést", "").strip()
                     szoveg = szoveg.replace("Elrejtett ingatlan Mutasd", "").strip()
 
-                    vegleges_id = keszit_ujjlenyomat(alap_id, szoveg, teljes_link)
                     teljes_link = "https://ingatlan.com" + tiszta_link
+                    vegleges_id = keszit_ujjlenyomat(alap_id, szoveg, teljes_link)
                     
                     if not any(t['id'] == vegleges_id for t in talalatok):
                         cim_szoveg = szoveg[:50] + "..." if len(szoveg) > 50 else "Ingatlan.com Ház"
